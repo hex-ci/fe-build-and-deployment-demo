@@ -1,0 +1,11 @@
+{
+  "presets": [
+    ["env", {
+      "targets": {
+        "node": "8"
+      }
+    }]
+  ],
+  "only": "*.babel.js",
+  "retainLines": true
+}
