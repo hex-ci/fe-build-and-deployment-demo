@@ -10,7 +10,8 @@ var lDelim = '[';
 var rDelim = ']';
 var commands = [
   'javascript',
-  'css'
+  'css',
+  'remove'
 ];
 var commandMap = {};
 

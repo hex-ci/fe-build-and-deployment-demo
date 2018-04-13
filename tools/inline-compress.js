@@ -9,6 +9,8 @@ var cssnano = require('cssnano');
 var uglify = require('uglify-js');
 var crypto = require('crypto');
 var fs = require('fs');
+var babel = require('babel-core');
+var sass = require('node-sass');
 
 var getHash = function(str) {
   return crypto.createHash('md5').update(str).digest('hex');
@@ -21,6 +23,8 @@ var getStub = function(seed) {
 RegExp.escape = function(s) {
   return s.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 };
+
+const babelrc = JSON.parse(fs.readFileSync(__dirname + '/../.babelrc'));
 
 if (!fs.existsSync(__dirname + '/.cache')) {
   fs.mkdirSync(__dirname + '/.cache');
@@ -141,6 +145,20 @@ module.exports = function() {
       }
       else {
         try {
+          try {
+            var compileResult = babel.transform(js, {
+              babelrc: false,
+              compact: false,
+              presets: babelrc.presets
+            });
+
+            if (compileResult.code) {
+              js = compileResult.code;
+            }
+          }
+          catch (e) {
+          }
+
           result = uglify.minify(js, {
             ie8: true,
             compress: compressOptions
@@ -179,6 +197,9 @@ module.exports = function() {
         return content;
       }
 
+      var needCompile = (element.attribs.type == 'text/sass' || element.attribs.type == 'text/scss');
+      var isSass = (element.attribs.type == 'text/sass');
+
       var css = element.children[0].data;
 
       css = css.trim();
@@ -188,6 +209,23 @@ module.exports = function() {
       var cacheFilename = __dirname + '/.cache/' + hash + '.css';
 
       var name = getStub(content);
+
+      if (needCompile) {
+        try {
+          var sassResult = sass.renderSync({
+            data: css,
+            indentedSyntax: isSass,
+            outputStyle: 'expanded'
+          });
+
+          if (sassResult.css) {
+            element.attribs.type = 'text/css';
+            css = sassResult.css;
+          }
+        }
+        catch (e) {
+        }
+      }
 
       if (fs.existsSync(cacheFilename)) {
         cacheContent = fs.readFileSync(cacheFilename);

@@ -2,10 +2,9 @@
   "presets": [
     ["env", {
       "targets": {
-        "node": "8"
+        "node": "8",
+        "browsers": ["ie >= 9", "android >= 4.2", "ios >= 9", "> 1%"]
       }
     }]
-  ],
-  "only": "*.babel.js",
-  "retainLines": true
+  ]
 }
